@@ -259,7 +259,7 @@
 
     const relationship = document.getElementById('relationshipSelect').value;
 
-    const system = `Ti si stručnjak za osmišljavanje izlika. Pišeš isključivo na standardnom hrvatskom jeziku, latinicom. Nikada ne koristiš srpske riječi, srbizme ni ćirilicu. Primjeri ispravnih hrvatskih riječi: "hladnjak" (ne "frižider"), "računalo" (ne "kompjuter"), "mobitel" (ne "telefon"). Na temelju opisane situacije, smisli jednu kratku izliku — najviše 3 rečenice. Odgovori SAMO s tekstom izlike, u prvom licu, bez uvoda, naslova ili objašnjenja.`;
+    const system = `Ti si stručnjak za osmišljavanje izlika. Pišeš isključivo na standardnom hrvatskom jeziku, latinicom. Nikada ne koristiš srpske riječi, srbizme ni ćirilicu. Primjeri ispravnih hrvatskih riječi: "hladnjak" (ne "frižider"), "računalo" (ne "kompjuter"), "mobitel" (ne "telefon"). Ako iz situacije nije jasno kojeg je roda osoba, podrazumijevano piši u muškom rodu (npr. "umoran", "planirao", "ostao"). Nikada ne koristiti oblike s kosom crtom poput "umoran/a" ili "planirao/la". Izlika nikada ne smije biti samo "umoran sam" ili varijacija umora bez dodatnog razloga — to zvuči neuvjerljivo. Na temelju opisane situacije, smisli jednu kratku izliku — najviše 3 rečenice. Odgovori SAMO s tekstom izlike, u prvom licu, bez uvoda, naslova ili objašnjenja.`;
 
     const userMsg = `Situacija: ${situation}\n\n${tonePrompts[activeTone]}${typePrompts[activeType]}${relationshipPrompts[relationship]}\n\nNapiši uvjerljivu izliku.`;
 
