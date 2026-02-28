@@ -22,6 +22,27 @@ exports.handler = async (event) => {
 
     const data = await response.json();
 
+    // Spremi u Supabase (ako su kredencijali postavljeni)
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && data.content?.[0]?.text) {
+      const { situacija, ton, vrsta, odnos } = body.meta || {};
+      fetch(`${process.env.SUPABASE_URL}/rest/v1/upiti`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          situacija: situacija || null,
+          ton: ton || null,
+          vrsta: vrsta || null,
+          odnos: odnos || null,
+          izlika: data.content[0].text.trim()
+        })
+      }).catch(() => {}); // Ne blokiraj odgovor ako Supabase zakaže
+    }
+
     return {
       statusCode: response.status,
       headers: { 'Content-Type': 'application/json' },
