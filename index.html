@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Izlike — Savršena izlika, za svaku prigodu</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; background: #F5F5F7; color: #1D1D1F; }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card { background: white; border-radius: 20px; box-shadow: 0 2px 24px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04); }
+    .spinner { width: 36px; height: 36px; border: 3px solid #E5E5EA; border-top-color: #0071E3; border-radius: 50%; animation: spin 0.75s linear infinite; margin: 0 auto; }
+    .fade-up { animation: fadeUp 0.4s ease forwards; }
+
+    .btn-dark { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #1D1D1F; color: white; border: none; border-radius: 980px; padding: 14px 28px; font-size: 16px; font-weight: 500; font-family: inherit; cursor: pointer; transition: background 0.2s, transform 0.15s; width: 100%; }
+    .btn-dark:hover { background: #3A3A3C; transform: translateY(-1px); }
+    .btn-dark:active { transform: translateY(0); }
+    .btn-dark:disabled { background: #8E8E93; cursor: not-allowed; transform: none; }
+
+    .btn-outline { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #0071E3; border: 1.5px solid #0071E3; border-radius: 980px; padding: 9px 18px; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+    .btn-outline:hover { background: rgba(0,113,227,0.06); }
+
+    .btn-pill { background: white; border: 1.5px solid #E5E5EA; border-radius: 980px; padding: 9px 18px; font-size: 14px; font-weight: 500; font-family: inherit; color: #1D1D1F; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.15s; }
+    .btn-pill:hover { background: #F0F0F5; border-color: #C7C7CC; transform: translateY(-1px); }
+    .btn-pill.active { background: #1D1D1F; color: white; border-color: #1D1D1F; }
+
+    .field { width: 100%; padding: 12px 14px; border: 1.5px solid #E5E5EA; border-radius: 12px; font-size: 15px; font-family: inherit; background: #F5F5F7; color: #1D1D1F; transition: border-color 0.2s, box-shadow 0.2s; }
+    .field:focus { outline: none; border-color: #0071E3; box-shadow: 0 0 0 3px rgba(0,113,227,0.18); }
+
+    select.field { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236E6E73' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+    .section-label { font-size: 12px; font-weight: 600; color: #6E6E73; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+
+    .result-box { border-left: 4px solid #0071E3; }
+    .error-box { background: #FFF5F5; border: 1.5px solid #FFCDD2; border-radius: 20px; padding: 24px 28px; }
+
+    .chip { background: white; border: 1.5px solid #E5E5EA; border-radius: 980px; padding: 9px 18px; font-size: 14px; font-family: inherit; color: #1D1D1F; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.15s; white-space: nowrap; }
+    .chip:hover { background: #F0F0F5; border-color: #C7C7CC; transform: translateY(-1px); }
+
+    @media (max-width: 600px) {
+      .options-grid { grid-template-columns: 1fr !important; }
+      .result-actions { flex-direction: column; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav style="background: rgba(245,245,247,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.07); position: sticky; top: 0; z-index: 100;">
+    <div style="max-width: 720px; margin: 0 auto; padding: 0 20px; height: 52px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">Izlike</span>
+        <span style="font-size: 13px; color: #6E6E73;">AI generator izlika</span>
+      </div>
+      <button onclick="toggleApiPanel()" style="display: flex; align-items: center; gap: 6px; background: white; border: 1.5px solid #D2D2D7; border-radius: 980px; padding: 7px 14px; font-size: 13px; font-family: inherit; color: #1D1D1F; cursor: pointer; transition: background 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        API Ključ
+      </button>
+    </div>
+  </nav>
+
+  <!-- API Panel -->
+  <div id="apiPanel" style="display: none; background: white; border-bottom: 1px solid #E5E5EA;">
+    <div style="max-width: 720px; margin: 0 auto; padding: 16px 20px;">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <label style="font-size: 14px; font-weight: 500; white-space: nowrap;">Anthropic API Ključ</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." class="field" style="flex: 1; min-width: 200px; font-family: 'SF Mono', 'Menlo', monospace; font-size: 13px;" oninput="saveApiKey()">
+        <span id="savedBadge" style="display: none; font-size: 13px; color: #34C759; font-weight: 500;">Spremljeno ✓</span>
+        <button onclick="toggleApiPanel()" class="btn-outline" style="font-size: 13px; padding: 7px 14px;">Zatvori</button>
+      </div>
+      <p style="margin-top: 10px; font-size: 12px; color: #8E8E93;">
+        Ključ se sprema lokalno u tvoj preglednik i nikad ne napušta tvoj uređaj. &nbsp;
+        <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color: #0071E3; text-decoration: none;">Dobavi API ključ →</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section style="padding: 72px 20px 48px; text-align: center;">
+    <div style="max-width: 620px; margin: 0 auto;">
+      <p style="font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #0071E3; margin-bottom: 14px;">AI Generator</p>
+      <h1 style="font-size: clamp(34px, 7vw, 54px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.06; color: #1D1D1F; margin-bottom: 18px;">
+        Savršena izlika,<br>za svaku prigodu.
+      </h1>
+      <p style="font-size: 18px; color: #6E6E73; line-height: 1.55; max-width: 480px; margin: 0 auto;">
+        Opiši situaciju, a AI će smisliti uvjerljivu i prirodnu izliku — odmah, bez razmišljanja.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main style="max-width: 720px; margin: 0 auto; padding: 0 20px 96px;">
+
+    <!-- Quick-start chips -->
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 28px;">
+      <button class="chip" onclick="fillExample('tetka')">👵 Tetka — ručak</button>
+      <button class="chip" onclick="fillExample('prijatelj')">🎉 Prijatelj — zurka</button>
+      <button class="chip" onclick="fillExample('kolega')">🍻 Kolega — after-work</button>
+      <button class="chip" onclick="fillExample('sef')">💼 Šef — team building</button>
+    </div>
+
+    <!-- Generator card -->
+    <div class="card" style="padding: 32px; margin-bottom: 20px;">
+
+      <!-- Situation input -->
+      <div style="margin-bottom: 24px;">
+        <label class="section-label">Opiši situaciju</label>
+        <textarea id="situationInput" class="field" rows="4" placeholder="Npr. Tetka me pozvala na obiteljski ručak u nedjelju, ali ne želim ići jer sam planirao/la odmaranje cijeli vikend..." style="resize: vertical; line-height: 1.55;"></textarea>
+      </div>
+
+      <!-- Options grid -->
+      <div class="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+
+        <!-- Tone -->
+        <div>
+          <div class="section-label">Ton izlike</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button class="btn-pill active" id="tone-blagi" onclick="setTone('blagi')">😊 Blagi</button>
+            <button class="btn-pill" id="tone-uvjerljivi" onclick="setTone('uvjerljivi')">💪 Uvjerljivi</button>
+            <button class="btn-pill" id="tone-hitni" onclick="setTone('hitni')">🚨 Hitni</button>
+          </div>
+        </div>
+
+        <!-- Relationship -->
+        <div>
+          <div class="section-label">Odnos s osobom</div>
+          <select id="relationshipSelect" class="field">
+            <option value="opcenito">Općenito</option>
+            <option value="obitelj">👨‍👩‍👧 Obitelj</option>
+            <option value="prijatelj">👫 Prijatelj/ica</option>
+            <option value="kolega">💼 Kolega/ica</option>
+            <option value="sef">👔 Šef/ica</option>
+            <option value="partner">❤️ Partner/ica</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Type -->
+      <div style="margin-bottom: 28px;">
+        <div class="section-label">Vrsta izlike</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          <button class="btn-pill active" id="type-sve" onclick="setType('sve')">Sve</button>
+          <button class="btn-pill" id="type-zdravlje" onclick="setType('zdravlje')">🤒 Zdravlje</button>
+          <button class="btn-pill" id="type-posao" onclick="setType('posao')">💼 Posao</button>
+          <button class="btn-pill" id="type-obitelj" onclick="setType('obitelj')">👨‍👩‍👧 Obitelj</button>
+          <button class="btn-pill" id="type-tehnicko" onclick="setType('tehnicko')">🔧 Kvar / Problem</button>
+        </div>
+      </div>
+
+      <!-- Generate button -->
+      <button class="btn-dark" id="generateBtn" onclick="generateExcuse()">
+        Generiraj izliku
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingCard" class="card" style="display: none; padding: 52px 32px; text-align: center; margin-bottom: 20px;">
+      <div class="spinner" style="margin-bottom: 16px;"></div>
+      <p style="font-size: 16px; color: #6E6E73;">AI razmišlja o savršenoj izlici...</p>
+    </div>
+
+    <!-- Result -->
+    <div id="resultCard" class="card result-box fade-up" style="display: none; padding: 28px 32px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #0071E3;">Tvoja izlika</span>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-outline" id="copyBtn" onclick="copyExcuse()" style="font-size: 13px; padding: 8px 16px;">📋 Kopiraj</button>
+          <button class="btn-outline" onclick="shareWhatsApp()" style="font-size: 13px; padding: 8px 16px;">💬 WhatsApp</button>
+        </div>
+      </div>
+
+      <p id="excuseText" style="font-size: 17px; line-height: 1.65; color: #1D1D1F; white-space: pre-wrap;"></p>
+
+      <div class="result-actions" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #F2F2F7; display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn-outline" onclick="generateExcuse()" style="font-size: 14px;">🔄 Pokušaj drugačije</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: #8E8E93;">Korisna?</span>
+          <button onclick="rate('up')" id="rateUp" style="padding: 7px 13px; border-radius: 980px; border: 1.5px solid #E5E5EA; background: white; font-size: 14px; cursor: pointer; transition: all 0.2s; font-family: inherit;">👍</button>
+          <button onclick="rate('down')" id="rateDown" style="padding: 7px 13px; border-radius: 980px; border: 1.5px solid #E5E5EA; background: white; font-size: 14px; cursor: pointer; transition: all 0.2s; font-family: inherit;">👎</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorCard" class="error-box" style="display: none; margin-bottom: 20px;">
+      <p style="font-size: 15px; font-weight: 600; color: #D32F2F; margin-bottom: 6px;">⚠️ Greška</p>
+      <p id="errorMsg" style="font-size: 14px; color: #6E6E73; line-height: 1.5;"></p>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer style="border-top: 1px solid #D2D2D7; padding: 28px 20px; text-align: center;">
+    <p style="font-size: 14px; color: #6E6E73;">© 2025 Izlike — Za zabavnu i kreativnu upotrebu</p>
+    <p style="font-size: 12px; color: #8E8E93; margin-top: 6px;">Generirane izlike su isključivo za zabavu. Koristite odgovorno. 😄</p>
+  </footer>
+
+<script>
+  let activeTone = 'blagi';
+  let activeType = 'sve';
+  let currentExcuse = '';
+
+  // Load saved API key
+  window.addEventListener('load', () => {
+    const k = localStorage.getItem('izlike_api_key');
+    if (k) document.getElementById('apiKeyInput').value = k;
+  });
+
+  function toggleApiPanel() {
+    const p = document.getElementById('apiPanel');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function saveApiKey() {
+    const k = document.getElementById('apiKeyInput').value;
+    localStorage.setItem('izlike_api_key', k);
+    const badge = document.getElementById('savedBadge');
+    badge.style.display = 'inline';
+    setTimeout(() => badge.style.display = 'none', 2000);
+  }
+
+  function setTone(t) {
+    activeTone = t;
+    document.querySelectorAll('[id^="tone-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('tone-' + t).classList.add('active');
+  }
+
+  function setType(t) {
+    activeType = t;
+    document.querySelectorAll('[id^="type-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('type-' + t).classList.add('active');
+  }
+
+  const examples = {
+    tetka: 'Tetka me pozvala na obiteljski ručak u nedjelju, ali ne želim ići jer sam planirao/la opustiti se i provesti dan sam/sama doma.',
+    prijatelj: 'Prijatelj organizira zurku u petak navečer i poziva me, ali nisam raspoložen/a za izlazak i ne znam kako mu to reći.',
+    kolega: 'Kolega s posla organizira after-work piće u četvrtak i očekuje da dođem, ali ne volim miješati posao i privatni život.',
+    sef: 'Šef je organizirao team building vikend na planini i svi moraju ići, ali stvarno ne želim žrtvovati vikend.'
+  };
+
+  function fillExample(key) {
+    document.getElementById('situationInput').value = examples[key];
+    document.getElementById('situationInput').focus();
+  }
+
+  const tonePrompts = {
+    blagi: 'Ton izlike treba biti blagi, srdačan i prijateljski.',
+    uvjerljivi: 'Ton izlike treba biti uvjerljiv, s jasnim i detaljnim razlogom koji teško može biti osporen.',
+    hitni: 'Ton izlike treba biti hitan, kao da se radi o ozbiljnoj situaciji koja zahtijeva hitnu pažnju.'
+  };
+
+  const typePrompts = {
+    sve: '',
+    zdravlje: ' Izlika mora biti vezana uz zdravlje (bolest, pregled, loše samoosjećanje).',
+    posao: ' Izlika mora biti vezana uz posao (hitan rok, neplanirani zadatak, poslovno putovanje).',
+    obitelj: ' Izlika mora biti vezana uz obvezu s obitelji (djeca, partner, roditelji).',
+    tehnicko: ' Izlika mora biti vezana uz kvar ili tehnički problem (auto, kuća, uređaj).'
+  };
+
+  const relationshipPrompts = {
+    opcenito: '',
+    obitelj: ' Pišem ovo članu obitelji — ton treba biti topao i obiteljski.',
+    prijatelj: ' Pišem ovo bliskom prijatelju ili prijateljici — ton treba biti opušten i neformalan.',
+    kolega: ' Pišem ovo kolegi s posla — ton treba biti kolegijalan, ali ne previše formalan.',
+    sef: ' Pišem ovo šefu ili šefici — ton treba biti profesionalan i poštovativan.',
+    partner: ' Pišem ovo svom partneru ili partnerici — ton treba biti nježan i uvjerljiv.'
+  };
+
+  async function generateExcuse() {
+    const situation = document.getElementById('situationInput').value.trim();
+
+    if (!situation) {
+      const ta = document.getElementById('situationInput');
+      ta.style.borderColor = '#FF3B30';
+      ta.focus();
+      setTimeout(() => ta.style.borderColor = '#E5E5EA', 2000);
+      return;
+    }
+
+    const apiKey = document.getElementById('apiKeyInput').value || localStorage.getItem('izlike_api_key');
+    if (!apiKey) {
+      document.getElementById('apiPanel').style.display = 'block';
+      document.getElementById('apiKeyInput').focus();
+      showError('Unesi svoj Anthropic API ključ — klikni "API Ključ" gore desno.');
+      return;
+    }
+
+    hide('resultCard'); hide('errorCard');
+    show('loadingCard');
+    document.getElementById('generateBtn').disabled = true;
+
+    const relationship = document.getElementById('relationshipSelect').value;
+
+    const system = `Ti si stručnjak za osmišljavanje izlika na hrvatskom jeziku. Na temelju opisane situacije, smisli jednu uvjerljivu, prirodnu i realističnu izliku. Izlika mora zvučati autentično — kao da dolazi od stvarne osobe, bez pretjerane dramatike. Odgovori SAMO s tekstom izlike, u prvom licu, bez uvoda, naslova ili objašnjenja.`;
+
+    const userMsg = `Situacija: ${situation}\n\n${tonePrompts[activeTone]}${typePrompts[activeType]}${relationshipPrompts[relationship]}\n\nNapiši uvjerljivu izliku.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 400,
+          system,
+          messages: [{ role: 'user', content: userMsg }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      currentExcuse = data.content[0].text.trim();
+
+      hide('loadingCard');
+      show('resultCard');
+      document.getElementById('rateUp').style.cssText += '; background: white; border-color: #E5E5EA;';
+      document.getElementById('rateDown').style.cssText += '; background: white; border-color: #E5E5EA;';
+      await typeWriter(currentExcuse);
+
+    } catch (e) {
+      hide('loadingCard');
+      let msg = e.message;
+      if (msg.includes('401') || msg.toLowerCase().includes('api_key') || msg.toLowerCase().includes('authentication')) {
+        msg = 'Nevažeći API ključ. Provjeri da si unio/la ispravan Anthropic API ključ.';
+      } else if (msg.includes('Failed to fetch') || msg.toLowerCase().includes('cors') || msg.toLowerCase().includes('network')) {
+        msg = 'Ne mogu se spojiti na API. Provjeri internetsku vezu. Ako otvaraš datoteku direktno (file://), pokušaj je poslužiti putem lokalnog servera (npr. Live Server ekstenzija u VS Codeu).';
+      }
+      showError(msg);
+    } finally {
+      document.getElementById('generateBtn').disabled = false;
+    }
+  }
+
+  async function typeWriter(text) {
+    const el = document.getElementById('excuseText');
+    el.textContent = '';
+    for (let i = 0; i <= text.length; i++) {
+      el.textContent = text.slice(0, i);
+      await sleep(16);
+    }
+  }
+
+  function copyExcuse() {
+    if (!currentExcuse) return;
+    navigator.clipboard.writeText(currentExcuse).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const original = btn.innerHTML;
+      btn.innerHTML = '✓ Kopirano!';
+      btn.style.color = '#34C759';
+      btn.style.borderColor = '#34C759';
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.style.color = '#0071E3';
+        btn.style.borderColor = '#0071E3';
+      }, 2500);
+    });
+  }
+
+  function shareWhatsApp() {
+    if (!currentExcuse) return;
+    window.open('https://wa.me/?text=' + encodeURIComponent(currentExcuse), '_blank');
+  }
+
+  function rate(type) {
+    const up = document.getElementById('rateUp');
+    const dn = document.getElementById('rateDown');
+    up.style.background = type === 'up' ? '#E8F5E9' : 'white';
+    up.style.borderColor = type === 'up' ? '#34C759' : '#E5E5EA';
+    dn.style.background = type === 'down' ? '#FFEBEE' : 'white';
+    dn.style.borderColor = type === 'down' ? '#FF3B30' : '#E5E5EA';
+  }
+
+  function showError(msg) {
+    document.getElementById('errorMsg').textContent = msg;
+    show('errorCard');
+  }
+
+  function show(id) { document.getElementById(id).style.display = 'block'; }
+  function hide(id) { document.getElementById(id).style.display = 'none'; }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
