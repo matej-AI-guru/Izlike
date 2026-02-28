@@ -56,28 +56,8 @@
         <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">Izlike</span>
         <span style="font-size: 13px; color: #6E6E73;">AI generator izlika</span>
       </div>
-      <button onclick="toggleApiPanel()" style="display: flex; align-items: center; gap: 6px; background: white; border: 1.5px solid #D2D2D7; border-radius: 980px; padding: 7px 14px; font-size: 13px; font-family: inherit; color: #1D1D1F; cursor: pointer; transition: background 0.2s;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6E73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-        API Ključ
-      </button>
     </div>
   </nav>
-
-  <!-- API Panel -->
-  <div id="apiPanel" style="display: none; background: white; border-bottom: 1px solid #E5E5EA;">
-    <div style="max-width: 720px; margin: 0 auto; padding: 16px 20px;">
-      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <label style="font-size: 14px; font-weight: 500; white-space: nowrap;">Anthropic API Ključ</label>
-        <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-..." class="field" style="flex: 1; min-width: 200px; font-family: 'SF Mono', 'Menlo', monospace; font-size: 13px;" oninput="saveApiKey()">
-        <span id="savedBadge" style="display: none; font-size: 13px; color: #34C759; font-weight: 500;">Spremljeno ✓</span>
-        <button onclick="toggleApiPanel()" class="btn-outline" style="font-size: 13px; padding: 7px 14px;">Zatvori</button>
-      </div>
-      <p style="margin-top: 10px; font-size: 12px; color: #8E8E93;">
-        Ključ se sprema lokalno u tvoj preglednik i nikad ne napušta tvoj uređaj. &nbsp;
-        <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color: #0071E3; text-decoration: none;">Dobavi API ključ →</a>
-      </p>
-    </div>
-  </div>
 
   <!-- Hero -->
   <section style="padding: 72px 20px 48px; text-align: center;">
@@ -204,25 +184,6 @@
   let activeType = 'sve';
   let currentExcuse = '';
 
-  // Load saved API key
-  window.addEventListener('load', () => {
-    const k = localStorage.getItem('izlike_api_key');
-    if (k) document.getElementById('apiKeyInput').value = k;
-  });
-
-  function toggleApiPanel() {
-    const p = document.getElementById('apiPanel');
-    p.style.display = p.style.display === 'none' ? 'block' : 'none';
-  }
-
-  function saveApiKey() {
-    const k = document.getElementById('apiKeyInput').value;
-    localStorage.setItem('izlike_api_key', k);
-    const badge = document.getElementById('savedBadge');
-    badge.style.display = 'inline';
-    setTimeout(() => badge.style.display = 'none', 2000);
-  }
-
   function setTone(t) {
     activeTone = t;
     document.querySelectorAll('[id^="tone-"]').forEach(b => b.classList.remove('active'));
@@ -281,14 +242,6 @@
       return;
     }
 
-    const apiKey = document.getElementById('apiKeyInput').value || localStorage.getItem('izlike_api_key');
-    if (!apiKey) {
-      document.getElementById('apiPanel').style.display = 'block';
-      document.getElementById('apiKeyInput').focus();
-      showError('Unesi svoj Anthropic API ključ — klikni "API Ključ" gore desno.');
-      return;
-    }
-
     hide('resultCard'); hide('errorCard');
     show('loadingCard');
     document.getElementById('generateBtn').disabled = true;
@@ -300,14 +253,9 @@
     const userMsg = `Situacija: ${situation}\n\n${tonePrompts[activeTone]}${typePrompts[activeType]}${relationshipPrompts[relationship]}\n\nNapiši uvjerljivu izliku.`;
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/.netlify/functions/excuse', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 400,
@@ -332,13 +280,7 @@
 
     } catch (e) {
       hide('loadingCard');
-      let msg = e.message;
-      if (msg.includes('401') || msg.toLowerCase().includes('api_key') || msg.toLowerCase().includes('authentication')) {
-        msg = 'Nevažeći API ključ. Provjeri da si unio/la ispravan Anthropic API ključ.';
-      } else if (msg.includes('Failed to fetch') || msg.toLowerCase().includes('cors') || msg.toLowerCase().includes('network')) {
-        msg = 'Ne mogu se spojiti na API. Provjeri internetsku vezu. Ako otvaraš datoteku direktno (file://), pokušaj je poslužiti putem lokalnog servera (npr. Live Server ekstenzija u VS Codeu).';
-      }
-      showError(msg);
+      showError(e.message || 'Došlo je do greške. Provjeri internetsku vezu i pokušaj ponovo.');
     } finally {
       document.getElementById('generateBtn').disabled = false;
     }
