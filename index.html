@@ -77,8 +77,8 @@
 
     <!-- Quick-start chips -->
     <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 28px;">
+      <button class="chip" onclick="fillExample('prijatelji')">🎉 Prijatelji — utorak</button>
       <button class="chip" onclick="fillExample('tetka')">👵 Tetka — ručak</button>
-      <button class="chip" onclick="fillExample('prijatelj')">🎉 Prijatelj — zurka</button>
       <button class="chip" onclick="fillExample('kolega')">🍻 Kolega — after-work</button>
       <button class="chip" onclick="fillExample('sef')">💼 Šef — team building</button>
     </div>
@@ -102,6 +102,7 @@
             <button class="btn-pill active" id="tone-blagi" onclick="setTone('blagi')">😊 Blagi</button>
             <button class="btn-pill" id="tone-uvjerljivi" onclick="setTone('uvjerljivi')">💪 Uvjerljivi</button>
             <button class="btn-pill" id="tone-hitni" onclick="setTone('hitni')">🚨 Hitni</button>
+            <button class="btn-pill" id="tone-saljivi" onclick="setTone('saljivi')">😂 Šaljivi</button>
           </div>
         </div>
 
@@ -197,8 +198,8 @@
   }
 
   const examples = {
+    prijatelji: 'Prijatelji su se dogovorili izaći u utorak navečer i pozivaju me, ali ne osjećam se raspoloženo za izlazak usred tjedna.',
     tetka: 'Tetka me pozvala na obiteljski ručak u nedjelju, ali ne želim ići jer sam planirao/la opustiti se i provesti dan sam/sama doma.',
-    prijatelj: 'Prijatelj organizira zurku u petak navečer i poziva me, ali nisam raspoložen/a za izlazak i ne znam kako mu to reći.',
     kolega: 'Kolega s posla organizira after-work piće u četvrtak i očekuje da dođem, ali ne volim miješati posao i privatni život.',
     sef: 'Šef je organizirao team building vikend na planini i svi moraju ići, ali stvarno ne želim žrtvovati vikend.'
   };
@@ -211,7 +212,8 @@
   const tonePrompts = {
     blagi: 'Ton izlike treba biti blagi, srdačan i prijateljski.',
     uvjerljivi: 'Ton izlike treba biti uvjerljiv, s jasnim i detaljnim razlogom koji teško može biti osporen.',
-    hitni: 'Ton izlike treba biti hitan, kao da se radi o ozbiljnoj situaciji koja zahtijeva hitnu pažnju.'
+    hitni: 'Ton izlike treba biti hitan, kao da se radi o ozbiljnoj situaciji koja zahtijeva hitnu pažnju.',
+    saljivi: 'Ton izlike treba biti smiješan i šaljiv — izmisli apsurdnu, komičnu i potpuno nevjerojatnu izliku koja će nasmijati osobu kojoj se šalje. Budi kreativan/na i pretjeraj s detaljima.'
   };
 
   const typePrompts = {
